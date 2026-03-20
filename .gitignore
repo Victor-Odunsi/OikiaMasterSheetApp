@@ -22,7 +22,6 @@ wheels/
 
 # Virtual environments
 app_venv/
-env/
 
 # Environment variables
 .env

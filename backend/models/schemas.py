@@ -75,6 +75,19 @@ class ResetPasswordResponse(BaseModel):
     message: str
 
 
+# ============ PASSWORD CHANGE SCHEMAS ============
+
+class ChangePasswordRequest(BaseModel):
+    """Schema for change password request (logged in user)"""
+    current_password: str
+    new_password: str = Field(..., min_length=6)
+
+
+class ChangePasswordResponse(BaseModel):
+    """Schema for change password response"""
+    message: str
+
+
 # ============ MEMBER SCHEMAS ============
 
 class MemberBase(BaseModel):

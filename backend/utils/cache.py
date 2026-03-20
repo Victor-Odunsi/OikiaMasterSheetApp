@@ -27,6 +27,7 @@ class MemberCache:
     def parse_sheet_data(self, raw_data: List[List[str]]) -> List[Dict]:
         """
         Parse raw sheet data into structured member objects
+        Uses DYNAMIC header detection to handle column changes gracefully
         
         Args:
             raw_data: Raw data from Google Sheets
@@ -40,42 +41,100 @@ class MemberCache:
         headers = raw_data[0]
         rows = raw_data[1:]
         
-        # Identify where attendance columns start (after column K = index 10)
-        static_column_count = 11  # A-K (0-10)
-        attendance_dates = headers[static_column_count:] if len(headers) > static_column_count else []
+        # Create column mapping: header name (lowercase) -> column index
+        column_map = {}
+        for idx, header in enumerate(headers):
+            if header:  # Skip empty headers
+                normalized_header = header.strip().lower()
+                column_map[normalized_header] = idx
         
+        # Define expected member columns (in order of preference for matching)
+        member_column_names = {
+            's/n': ['s/n', 'sn', 'id', 'number'],
+            'surname': ['surname', 'last name', 'lastname', 'family name'],
+            'first_name': ['first name', 'firstname', 'given name'],
+            'phone': ['phone number', 'phone', 'mobile', 'telephone', 'tel'],
+            'date': ['date', 'year', 'joined'],
+            'role': ['role', 'position', 'designation'],
+            'email': ['e-mail address', 'email', 'e-mail', 'mail'],
+            'address': ['address', 'home address', 'residence'],
+            'location': ['location', 'area', 'region'],
+            'unit': ['unit', 'department', 'group'],
+            'sex': ['sex', 'gender']
+        }
+        
+        # Find the column index for each member field
+        member_field_indices = {}
+        for field, possible_names in member_column_names.items():
+            for name in possible_names:
+                if name in column_map:
+                    member_field_indices[field] = column_map[name]
+                    break
+        
+        # Log any missing required fields
+        missing_fields = [field for field in member_column_names.keys() 
+                         if field not in member_field_indices]
+        if missing_fields:
+            print(f"[Cache] Warning: Could not find columns for: {', '.join(missing_fields)}")
+        
+        # Detect where attendance columns start
+        # Attendance columns are those NOT in member_field_indices
+        member_column_indices = set(member_field_indices.values())
+        
+        # Find the highest index of member columns
+        if member_column_indices:
+            last_member_col_idx = max(member_column_indices)
+            attendance_start_idx = last_member_col_idx + 1
+        else:
+            # Fallback if no member columns found
+            attendance_start_idx = 0
+        
+        # Get attendance date headers
+        attendance_dates = []
+        for idx, header in enumerate(headers):
+            if idx >= attendance_start_idx and header and header.strip():
+                # Skip if this column is used by member data
+                if idx not in member_column_indices:
+                    attendance_dates.append((idx, header.strip()))
+        
+        print(f"[Cache] Detected {len(member_field_indices)} member fields, "
+              f"{len(attendance_dates)} attendance columns")
+        
+        # Parse each row
         members = []
         for row in rows:
             if not row or len(row) == 0:
                 continue
             
-            # Pad row with empty strings if needed
-            while len(row) < static_column_count:
-                row.append("")
+            # Extract member data using dynamic indices
+            def get_value(field_name: str) -> str:
+                """Safely get value from row by field name"""
+                idx = member_field_indices.get(field_name)
+                if idx is not None and idx < len(row):
+                    return row[idx].strip() if row[idx] else ""
+                return ""
             
-            # Extract static member data (columns A-K)
             member = {
-                "id": row[0] if len(row) > 0 else "",
-                "surname": row[1] if len(row) > 1 else "",
-                "first_name": row[2] if len(row) > 2 else "",
-                "phone": row[3] if len(row) > 3 else "",
-                "date": row[4] if len(row) > 4 else "",
-                "role": row[5] if len(row) > 5 else "",
-                "email": row[6] if len(row) > 6 else "",
-                "address": row[7] if len(row) > 7 else "",
-                "location": row[8] if len(row) > 8 else "",
-                "unit": row[9] if len(row) > 9 else "",
-                "sex": row[10] if len(row) > 10 else "",
+                "id": get_value('s/n'),
+                "surname": get_value('surname'),
+                "first_name": get_value('first_name'),
+                "phone": get_value('phone'),
+                "date": get_value('date'),
+                "role": get_value('role'),
+                "email": get_value('email'),
+                "address": get_value('address'),
+                "location": get_value('location'),
+                "unit": get_value('unit'),
+                "sex": get_value('sex'),
                 "attendance": {}
             }
             
-            # Extract attendance data (columns L+)
-            attendance_values = row[static_column_count:] if len(row) > static_column_count else []
-            for i, date in enumerate(attendance_dates):
-                if i < len(attendance_values):
-                    member["attendance"][date] = attendance_values[i]
+            # Extract attendance data using dynamic column positions
+            for col_idx, date_header in attendance_dates:
+                if col_idx < len(row):
+                    member["attendance"][date_header] = row[col_idx].strip() if row[col_idx] else ""
                 else:
-                    member["attendance"][date] = ""
+                    member["attendance"][date_header] = ""
             
             members.append(member)
         

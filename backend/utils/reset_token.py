@@ -24,7 +24,7 @@ def get_reset_token_expiration() -> datetime:
     Returns:
         Datetime object set to RESET_TOKEN_EXPIRATION_HOURS from now
     """
-    return datetime.utcnow() + timedelta(hours=settings.RESET_TOKEN_EXPIRATION_HOURS)
+    return datetime.now() + timedelta(hours=settings.RESET_TOKEN_EXPIRATION_HOURS)
 
 
 def is_token_expired(expires_at: datetime) -> bool:
@@ -37,4 +37,4 @@ def is_token_expired(expires_at: datetime) -> bool:
     Returns:
         True if token has expired, False otherwise
     """
-    return datetime.utcnow() > expires_at
+    return datetime.now() > expires_at

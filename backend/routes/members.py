@@ -110,6 +110,7 @@ def create_member(
 ):
     """
     Register a new member
+    Uses dynamic column detection to handle sheet structure changes
     
     Args:
         member_data: Member creation data
@@ -118,35 +119,13 @@ def create_member(
     Returns:
         Created member object with assigned S/N
     """
+    from utils.column_mapper import build_member_row
+    
     # Generate next S/N
     new_sn = generate_next_sn()
     
-    # Prepare row data for Google Sheets (columns A-K)
-    row_data = [
-        str(new_sn),              # A: S/N
-        member_data.surname,      # B: SURNAME
-        member_data.first_name,   # C: First Name
-        member_data.phone,        # D: Phone Number
-        member_data.date,         # E: Date
-        member_data.role,         # F: Role
-        member_data.email or "",  # G: E-MAIL ADDRESS
-        member_data.address or "",# H: Address
-        member_data.location,     # I: Location
-        member_data.unit,         # J: Unit
-        member_data.sex           # K: Sex
-    ]
-    
-    # Write to Google Sheets
-    try:
-        sheets_service.append_row(row_data)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to write to Google Sheets: {str(e)}"
-        )
-    
-    # Create member object
-    new_member = {
+    # Prepare member data dictionary
+    member_dict = {
         "id": str(new_sn),
         "surname": member_data.surname,
         "first_name": member_data.first_name,
@@ -157,7 +136,24 @@ def create_member(
         "address": member_data.address or "",
         "location": member_data.location,
         "unit": member_data.unit,
-        "sex": member_data.sex,
+        "sex": member_data.sex
+    }
+    
+    # Build row data with dynamic column mapping
+    row_data = build_member_row(member_dict)
+    
+    # Write to Google Sheets
+    try:
+        sheets_service.append_row(row_data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to write to Google Sheets: {str(e)}"
+        )
+    
+    # Create member object for response
+    new_member = {
+        **member_dict,
         "attendance": {}
     }
     

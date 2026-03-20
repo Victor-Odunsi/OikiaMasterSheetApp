@@ -22,9 +22,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     
     # Set expiration time
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(hours=settings.JWT_EXPIRATION_HOURS)
+        expire = datetime.now() + timedelta(hours=settings.JWT_EXPIRATION_HOURS)
     
     to_encode.update({"exp": expire})
     
