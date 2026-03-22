@@ -36,8 +36,14 @@ class UserAdmin(ModelView, model=User):
         User.last_login
     ]
     
-    # Form configuration
-    form_columns = [User.email, "password", User.role, User.is_active]
+    # Form configuration - Use form_excluded_columns (don't use form_columns together!)
+    form_excluded_columns = [
+        User.hashed_password,  # Never show hashed password
+        User.created_at,       # Auto-generated, don't edit
+        User.last_login,       # Auto-updated, don't edit
+        User.reset_token,      # Internal field, don't edit
+        User.reset_token_expires  # Internal field, don't edit
+    ]
     
     # Custom form fields
     form_extra_fields = {
@@ -47,9 +53,6 @@ class UserAdmin(ModelView, model=User):
             description="Leave blank to keep existing password"
         )
     }
-    
-    # Hide hashed_password from forms
-    form_excluded_columns = [User.hashed_password, User.created_at, User.last_login]
     
     # Labels
     column_labels = {

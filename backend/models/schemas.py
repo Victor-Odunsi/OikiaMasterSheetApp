@@ -95,13 +95,13 @@ class MemberBase(BaseModel):
     surname: str
     first_name: str
     phone: str
-    date: str  # Year joined
-    role: str  # "1-Pastor", "2-Worker", etc.
+    date: Optional[str] = ""
+    role: str
     email: Optional[str] = ""
     address: Optional[str] = ""
     location: str
     unit: str
-    sex: str  # "Male" or "Female"
+    sex: str
 
 
 class MemberCreate(MemberBase):
