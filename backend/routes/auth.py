@@ -66,9 +66,14 @@ def login(
     token = create_access_token(token_data)
     
     return schemas.TokenResponse(
-        token=token,
-        role=user.role,
-        email=user.email
+        access_token=token,
+        refresh_token="",  # Implement refresh tokens later
+        user={
+            "id": user.id,
+            "email": user.email,
+            "role": user.role,
+            "is_active": user.is_active
+        }
     )
 
 

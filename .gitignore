@@ -20,11 +20,20 @@ wheels/
 .installed.cfg
 *.egg
 
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+build/
+
 # Virtual environments
 app_venv/
 
 # Environment variables
 .env
+.env.local
 
 # Database
 *.db

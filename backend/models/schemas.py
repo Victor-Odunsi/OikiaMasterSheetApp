@@ -46,9 +46,9 @@ class UserLogin(BaseModel):
 
 class TokenResponse(BaseModel):
     """Schema for JWT token response"""
-    token: str
-    role: str
-    email: str
+    access_token: str
+    refresh_token: str = ""
+    user: dict 
 
 
 # ============ PASSWORD RESET SCHEMAS ============

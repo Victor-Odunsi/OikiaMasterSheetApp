@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 
 from config import settings
 from models import init_db, engine, User
-from routes import auth_router, users_router, members_router, attendance_router, password_reset_router
+from routes import auth_router, users_router, members_router, attendance_router, password_reset_router, dashboard_router
 from admin_panel import UserAdmin
 
 
@@ -52,6 +52,7 @@ app.include_router(users_router)
 app.include_router(members_router)
 app.include_router(attendance_router)
 app.include_router(password_reset_router)
+app.include_router(dashboard_router)
 
 # Create SQLAdmin interface
 admin = Admin(app, engine)

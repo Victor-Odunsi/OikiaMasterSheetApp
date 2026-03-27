@@ -22,7 +22,7 @@ def create_default_admin():
         # Create default admin
         default_admin = User(
             email="admin@church.com",
-            hashed_password=hash_password("admin123"),  # CHANGE THIS PASSWORD!
+            hashed_password=hash_password("adminokay123"),  # CHANGE THIS PASSWORD!
             role="admin",
             is_active=True
         )
