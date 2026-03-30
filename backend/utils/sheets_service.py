@@ -157,6 +157,20 @@ class GoogleSheetsService:
             index = index // 26 - 1
         return result
 
+    def update_cell_as_text(self, cell_notation: str, value: str):
+        """Force cell value as plain text using USER_ENTERED with apostrophe prefix"""
+        try:
+            body = {"values": [[f"'{value}"]]}  # apostrophe forces text in Sheets
+            self.service.spreadsheets().values().update(
+                spreadsheetId=self.sheet_id,
+                range=f"{self.sheet_name}!{cell_notation}",
+                valueInputOption="USER_ENTERED",
+                body=body
+            ).execute()
+        except HttpError as e:
+            print(f"Error updating cell as text: {e}")
+            raise
+
 
 # Global sheets service instance
 sheets_service = GoogleSheetsService()

@@ -33,7 +33,7 @@ def get_current_sunday() -> str:
     else:
         next_sunday = today + timedelta(days=days_until_sunday)
     
-    return next_sunday.strftime("%d/%m/%Y")
+    return next_sunday.strftime("%d-%m-%Y")
 
 
 def ensure_attendance_column(date: str) -> tuple[str, int]:
@@ -69,26 +69,16 @@ def ensure_attendance_column(date: str) -> tuple[str, int]:
     col_letter = sheets_service.column_index_to_letter(new_col_index)
     
     # Add the date as header in the new column
-    sheets_service.update_cell(f"{col_letter}1", date)
+    sheets_service.update_cell_as_text(f"{col_letter}1", date)
     
     return col_letter, new_col_index
 
 
 @router.get("/current", response_model=schemas.AttendanceResponse)
 def get_current_attendance(_: dict = Depends(get_current_user)):
-    """
-    Get attendance data for current Sunday
-    
-    Args:
-        _: Current user
-        
-    Returns:
-        Current Sunday date and all members with their attendance status
-    """
     current_sunday = get_current_sunday()
-    members = member_cache.get_members()
     
-    # Add current attendance status to each member
+    members = member_cache.get_members()
     members_with_status = []
     for member in members:
         attendance_status = member.get("attendance", {}).get(current_sunday, "")
@@ -203,35 +193,28 @@ def get_attendance_history(
 
 @router.post("/bulk-mark")
 def bulk_mark_attendance(
-    attendance_list: list[schemas.AttendanceMarkRequest],
+    data: schemas.BulkAttendanceMarkRequest,
     _: dict = Depends(get_current_user)
 ):
-    """
-    Mark attendance for multiple members at once
-    Useful for batch operations
-    
-    Args:
-        attendance_list: List of attendance records
-        _: Current user
-        
-    Returns:
-        Summary of marked attendance
-    """
     success_count = 0
     failed = []
-    
-    for attendance_data in attendance_list:
+
+    for member_id in data.member_ids:
         try:
-            mark_attendance(attendance_data, _)
+            mark_attendance(
+                schemas.AttendanceMarkRequest(
+                    member_id=member_id,
+                    date=data.date,
+                    present=data.present
+                ),
+                _
+            )
             success_count += 1
         except Exception as e:
-            failed.append({
-                "member_id": attendance_data.member_id,
-                "error": str(e)
-            })
-    
+            failed.append({"member_id": member_id, "error": str(e)})
+
     return {
-        "message": f"Marked {success_count} out of {len(attendance_list)} records",
+        "message": f"Marked {success_count} out of {len(data.member_ids)} records",
         "success_count": success_count,
         "failed_count": len(failed),
         "failed_records": failed

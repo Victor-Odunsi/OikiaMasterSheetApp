@@ -51,7 +51,7 @@ class MemberCache:
         # Define expected member columns (in order of preference for matching)
         member_column_names = {
             's/n': ['s/n', 'sn', 'id', 'number'],
-            'surname': ['surname', 'last name', 'lastname', 'family name'],
+            'surname': ['surname', 'last name', 'lastname'],
             'first_name': ['first name', 'firstname', 'given name'],
             'phone': ['phone number', 'phone', 'mobile', 'telephone', 'tel'],
             'date': ['date', 'year', 'joined'],

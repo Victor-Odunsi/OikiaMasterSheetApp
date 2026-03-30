@@ -2,6 +2,9 @@
 Member management routes
 Handles member CRUD operations (Google Sheets)
 """
+from datetime import datetime
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 import threading
@@ -102,6 +105,15 @@ def get_member(
     
     return member
 
+def _reformat_date(date_str: str | None) -> str:
+    """Convert YYYY-MM-DD to DD/MM/YYYY"""
+    if not date_str:
+        return ""
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").strftime("%d/%m/%Y")
+    except ValueError:
+        return date_str
+
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_member(
@@ -130,7 +142,7 @@ def create_member(
         "surname": member_data.surname,
         "first_name": member_data.first_name,
         "phone": member_data.phone,
-        "date": member_data.date,
+        "date": _reformat_date(member_data.date),
         "role": member_data.role,
         "email": member_data.email or "",
         "address": member_data.address or "",

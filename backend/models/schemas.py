@@ -145,6 +145,11 @@ class AttendanceResponse(BaseModel):
     current_sunday: str
     members: list[dict]
 
+class BulkAttendanceMarkRequest(BaseModel):
+    member_ids: list[str]
+    date: str        # DD/MM/YYYY
+    present: bool
+
 
 # ============ CACHE SCHEMAS ============
 
