@@ -24,7 +24,7 @@ const navItems = [
 ]
 
 const adminItems = [
-  { href: '/users', label: 'Users', icon: UserCog },
+  { href: '/users', label: 'Ushers', icon: UserCog },
 ]
 
 export function Sidebar() {
@@ -59,7 +59,7 @@ export function Sidebar() {
           <Church className="h-4 w-4 text-white" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-gray-900 dark:text-white truncate">Church Usher</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-white truncate">OikiaCC Yaba Members</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Management System</p>
         </div>
       </div>

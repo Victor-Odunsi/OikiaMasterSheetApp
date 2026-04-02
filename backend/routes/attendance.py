@@ -33,46 +33,37 @@ def get_current_sunday() -> str:
     else:
         next_sunday = today + timedelta(days=days_until_sunday)
     
-    return next_sunday.strftime("%d-%m-%Y")
+    return next_sunday.strftime("%d/%m/%Y")
 
+
+# Module-level cache for column positions
+_column_cache: dict = {}
 
 def ensure_attendance_column(date: str) -> tuple[str, int]:
-    """
-    Ensure attendance column exists for the given date
-    Creates the column if it doesn't exist
+    global _column_cache
     
-    Args:
-        date: Date string in DD/MM/YYYY format
-        
-    Returns:
-        Tuple of (column_letter, column_index)
-    """
-    # Get all data to check headers
+    # Return from cache if we already know this date's column
+    if date in _column_cache:
+        return _column_cache[date]
+    
     all_data = sheets_service.get_all_data()
-    
     if not all_data:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to read sheet data"
-        )
+        raise HTTPException(status_code=500, detail="Failed to read sheet data")
     
     headers = all_data[0]
     
-    # Check if date column already exists
     if date in headers:
         col_index = headers.index(date)
         col_letter = sheets_service.column_index_to_letter(col_index)
+        _column_cache[date] = (col_letter, col_index)
         return col_letter, col_index
     
-    # Column doesn't exist, create it
     new_col_index = len(headers)
     col_letter = sheets_service.column_index_to_letter(new_col_index)
-    
-    # Add the date as header in the new column
     sheets_service.update_cell_as_text(f"{col_letter}1", date)
-    
-    return col_letter, new_col_index
+    _column_cache[date] = (col_letter, new_col_index)
 
+    return col_letter, new_col_index
 
 @router.get("/current", response_model=schemas.AttendanceResponse)
 def get_current_attendance(_: dict = Depends(get_current_user)):
@@ -102,49 +93,40 @@ def mark_attendance(
     attendance_data: schemas.AttendanceMarkRequest,
     _: dict = Depends(get_current_user)
 ):
-    """
-    Mark attendance for a member on a specific date
+    import traceback  # add this
     
-    Args:
-        attendance_data: Member ID, date, and present status
-        _: Current user
-        
-    Returns:
-        Success message
-        
-    Raises:
-        HTTPException: If member not found or update fails
-    """
     member_id = attendance_data.member_id
     date = attendance_data.date
     present = attendance_data.present
     
-    # Ensure the attendance column exists
+    print(f"[Mark] member_id={member_id}, date={date}, present={present}")  # add this
+    
     try:
         col_letter, col_index = ensure_attendance_column(date)
+        print(f"[Mark] Column: {col_letter} (index {col_index})")  # add this
     except Exception as e:
+        print(f"[Mark] Column error: {traceback.format_exc()}")  # add this
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to ensure attendance column: {str(e)}"
         )
     
-    # Find the member's row
     all_data = sheets_service.get_all_data()
     row_index = sheets_service.find_row_by_id(member_id, all_data)
+    print(f"[Mark] Row index for member {member_id}: {row_index}")  # add this
     
     if row_index is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Member not found"
-        )
+        raise HTTPException(status_code=404, detail="Member not found")
     
-    # Update the attendance cell
     cell_value = "P" if present else ""
     cell_notation = f"{col_letter}{row_index}"
+    print(f"[Mark] Writing '{cell_value}' to cell {cell_notation}")  # add this
     
     try:
         sheets_service.update_cell(cell_notation, cell_value)
+        print(f"[Mark] Success")  # add this
     except Exception as e:
+        print(f"[Mark] Update error: {traceback.format_exc()}")  # add this
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to mark attendance: {str(e)}"
@@ -196,19 +178,26 @@ def bulk_mark_attendance(
     data: schemas.BulkAttendanceMarkRequest,
     _: dict = Depends(get_current_user)
 ):
+    # Ensure column exists ONCE before looping
+    try:
+        col_letter, col_index = ensure_attendance_column(data.date)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Column error: {str(e)}")
+
+    # Fetch all sheet data ONCE
+    all_data = sheets_service.get_all_data()
+
     success_count = 0
     failed = []
 
     for member_id in data.member_ids:
         try:
-            mark_attendance(
-                schemas.AttendanceMarkRequest(
-                    member_id=member_id,
-                    date=data.date,
-                    present=data.present
-                ),
-                _
-            )
+            row_index = sheets_service.find_row_by_id(member_id, all_data)
+            if row_index is None:
+                raise Exception("Member not found")
+            
+            cell_value = "P" if data.present else ""
+            sheets_service.update_cell(f"{col_letter}{row_index}", cell_value)
             success_count += 1
         except Exception as e:
             failed.append({"member_id": member_id, "error": str(e)})

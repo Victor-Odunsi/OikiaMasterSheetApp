@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -26,8 +26,9 @@ const schema = z
 
 type FormData = z.infer<typeof schema>
 
-export default function ResetPasswordPage() {
-  const { token } = useParams<{ token: string }>()
+function ResetPasswordContent() {
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token') ?? ''
   const router = useRouter()
   const [tokenValid, setTokenValid] = useState<boolean | null>(null)
   const [success, setSuccess] = useState(false)
@@ -159,5 +160,13 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordContent />
+    </Suspense>
   )
 }

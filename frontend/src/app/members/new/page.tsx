@@ -17,8 +17,10 @@ export default function NewMemberPage() {
 
   const handleSubmit = async (data: MemberFormData) => {
     try {
-      const member = await membersApi.create(data)
+      const res = await membersApi.create(data)
       toast.success('Member added successfully')
+      // Backend returns { message, member: { id, ... } }
+      const member = (res as { member?: { id: string } }).member ?? (res as { id: string })
       router.push(`/members/${member.id}`)
     } catch (err) {
       toast.error(getErrorMessage(err))

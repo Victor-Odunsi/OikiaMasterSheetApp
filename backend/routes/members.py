@@ -184,67 +184,46 @@ def update_member(
     updates: schemas.MemberUpdate,
     _: dict = Depends(get_current_user)
 ):
-    """
-    Update a member's information
-    
-    Args:
-        member_id: S/N of member to update
-        updates: Fields to update
-        _: Current user
-        
-    Returns:
-        Success message
-        
-    Raises:
-        HTTPException: If member not found or update fails
-    """
-    # Get current member data
+    from utils.column_mapper import build_member_row, get_sheet_column_map
+
     current_member = member_cache.get_by_id(member_id)
-    
     if not current_member:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Member not found"
-        )
-    
-    # Find the row in the sheet
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Member not found")
+
     all_data = sheets_service.get_all_data()
     row_index = sheets_service.find_row_by_id(member_id, all_data)
-    
     if row_index is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Member not found in sheet"
-        )
-    
-    # Build updated row (merge current data with updates)
-    updated_row = [
-        member_id,  # A: S/N (never changes)
-        updates.surname if updates.surname is not None else current_member["surname"],
-        updates.first_name if updates.first_name is not None else current_member["first_name"],
-        updates.phone if updates.phone is not None else current_member["phone"],
-        current_member["date"],  # E: Date (typically unchanged)
-        updates.role if updates.role is not None else current_member["role"],
-        updates.email if updates.email is not None else current_member["email"],
-        updates.address if updates.address is not None else current_member["address"],
-        updates.location if updates.location is not None else current_member["location"],
-        updates.unit if updates.unit is not None else current_member["unit"],
-        updates.sex if updates.sex is not None else current_member["sex"]
-    ]
-    
-    # Update in Google Sheets
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Member not found in sheet")
+
+    # Merge current data with updates
+    merged = {
+        "id": member_id,
+        "surname": updates.surname if updates.surname is not None else current_member["surname"],
+        "first_name": updates.first_name if updates.first_name is not None else current_member["first_name"],
+        "phone": updates.phone if updates.phone is not None else current_member["phone"],
+        "date": current_member.get("date", ""),
+        "role": updates.role if updates.role is not None else current_member["role"],
+        "email": updates.email if updates.email is not None else current_member.get("email", ""),
+        "address": updates.address if updates.address is not None else current_member.get("address", ""),
+        "location": updates.location if updates.location is not None else current_member.get("location", ""),
+        "unit": updates.unit if updates.unit is not None else current_member.get("unit", ""),
+        "sex": updates.sex if updates.sex is not None else current_member["sex"],
+    }
+
+    # Use dynamic column mapper — same as create
+    column_map = get_sheet_column_map()
+    updated_row = build_member_row(merged, column_map)
+
     try:
-        sheets_service.update_row(row_index, updated_row)
+        # Update only up to the last member column, not attendance columns
+        end_col = sheets_service.column_index_to_letter(len(updated_row) - 1)
+        sheets_service.update_row(row_index, updated_row, range_notation=f"A{row_index}:{end_col}{row_index}")
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update Google Sheets: {str(e)}"
-        )
-    
-    # Update in cache
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to update: {str(e)}")
+
     update_dict = updates.dict(exclude_unset=True)
     member_cache.update_member(member_id, update_dict)
-    
+
     return {"message": "Member updated successfully"}
 
 

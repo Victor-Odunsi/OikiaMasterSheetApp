@@ -183,9 +183,9 @@ export default function DashboardPage() {
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-gray-700">
                     <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member</th>
-                    <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                    <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">Date</th>
                     <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                    <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Check-in</th>
+                    <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Check-in</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
@@ -196,13 +196,13 @@ export default function DashboardPage() {
                           ? `${record.member.first_name} ${record.member.surname}`
                           : record.member_id}
                       </td>
-                      <td className="py-2.5 px-3 text-gray-500 dark:text-gray-400">{formatDate(record.date)}</td>
+                      <td className="py-2.5 px-3 text-gray-500 dark:text-gray-400 hidden sm:table-cell">{formatDate(record.date)}</td>
                       <td className="py-2.5 px-3">
                         <Badge variant={record.status === 'P' ? 'success' : 'default'}>
                           {record.status === 'P' ? 'Present' : 'Absent'}
                         </Badge>
                       </td>
-                      <td className="py-2.5 px-3 text-gray-500 dark:text-gray-400">
+                      <td className="py-2.5 px-3 text-gray-500 dark:text-gray-400 hidden md:table-cell">
                         {record.check_in_time ?? '—'}
                       </td>
                     </tr>

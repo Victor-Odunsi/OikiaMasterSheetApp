@@ -53,7 +53,7 @@ export default function LoginPage() {
           <div className="inline-flex h-14 w-14 rounded-2xl bg-blue-600 items-center justify-center mb-4 shadow-lg">
             <Church className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Church Usher</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">OikiaCC Yaba Members Management System</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Sign in to your account</p>
         </div>
 
@@ -114,7 +114,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center mt-6 text-xs text-gray-400 dark:text-gray-500">
-          Church Usher Management System &copy; {new Date().getFullYear()}
+          OikiaCC Yaba Members Management System &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

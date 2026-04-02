@@ -34,8 +34,12 @@ export default function MembersPage() {
   }
 
   const filtered = members?.filter((m: Member) => {
-    const q = search.toLowerCase()
+    const q = search.toLowerCase().trim()
+    const fullName = `${m.first_name} ${m.surname}`.toLowerCase()
+    const fullNameReversed = `${m.surname} ${m.first_name}`.toLowerCase()
     return (
+      fullName.includes(q) ||
+      fullNameReversed.includes(q) ||
       m.first_name.toLowerCase().includes(q) ||
       m.surname.toLowerCase().includes(q) ||
       m.phone.toLowerCase().includes(q) ||
@@ -108,10 +112,18 @@ export default function MembersPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-gray-700">
-                    {['Name', 'Phone', 'Unit', 'Location', 'Sex', 'Joined', ''].map((h) => (
+                    {[
+                      { label: 'Name', cls: '' },
+                      { label: 'Phone', cls: 'hidden md:table-cell' },
+                      { label: 'Unit', cls: 'hidden sm:table-cell' },
+                      { label: 'Location', cls: 'hidden lg:table-cell' },
+                      { label: 'Sex', cls: 'hidden lg:table-cell' },
+                      { label: 'Joined', cls: 'hidden xl:table-cell' },
+                      { label: '', cls: '' },
+                    ].map(({ label: h, cls }) => (
                       <th
                         key={h}
-                        className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap"
+                        className={`text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap ${cls}`}
                       >
                         {h}
                       </th>
@@ -135,15 +147,15 @@ export default function MembersPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">{m.phone}</td>
-                      <td className="py-3 px-3 whitespace-nowrap">
+                      <td className="py-3 px-3 text-gray-500 dark:text-gray-400 whitespace-nowrap hidden md:table-cell">{m.phone}</td>
+                      <td className="py-3 px-3 whitespace-nowrap hidden sm:table-cell">
                         <Badge variant="info">{m.unit}</Badge>
                       </td>
-                      <td className="py-3 px-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">{m.location}</td>
-                      <td className="py-3 px-3">
+                      <td className="py-3 px-3 text-gray-500 dark:text-gray-400 whitespace-nowrap hidden lg:table-cell">{m.location}</td>
+                      <td className="py-3 px-3 hidden lg:table-cell">
                         <Badge variant={m.sex === 'Male' ? 'default' : 'warning'}>{m.sex}</Badge>
                       </td>
-                      <td className="py-3 px-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      <td className="py-3 px-3 text-gray-500 dark:text-gray-400 whitespace-nowrap hidden xl:table-cell">
                         {m.date ? new Date(m.date).toLocaleDateString() : '—'}
                       </td>
                       <td className="py-3 px-3" onClick={(e) => e.stopPropagation()}>

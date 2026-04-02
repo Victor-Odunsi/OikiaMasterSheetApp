@@ -11,11 +11,12 @@ const schema = z.object({
   surname: z.string().min(1, 'Surname is required'),
   phone: z.string().min(6, 'Valid phone number required'),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
-  location: z.string().min(1, 'Location is required'),
-  unit: z.string().min(1, 'Unit is required'),
+  address: z.string().optional().default(''),
+  location: z.string().optional().default(''),
+  unit: z.string().optional().default(''),       // open text, not required
   sex: z.enum(['Male', 'Female']),
-  role: z.string().min(1, 'Role is required'),
-  date: z.string().min(1, 'Date is required'),
+  role: z.string().min(1, 'Role is required'),   // dropdown, required
+  date: z.string().optional().default(''),
 })
 
 type FormData = z.infer<typeof schema>
@@ -27,22 +28,26 @@ interface MemberFormProps {
 }
 
 const SEX_OPTIONS = [
-  { value: '', label: 'Select sex' },
   { value: 'Male', label: 'Male' },
   { value: 'Female', label: 'Female' },
 ]
 
-const UNIT_OPTIONS = [
-  { value: '', label: 'Select unit' },
-  { value: 'Choir', label: 'Choir' },
-  { value: 'Ushers', label: 'Ushers' },
-  { value: 'Media', label: 'Media' },
-  { value: 'Security', label: 'Security' },
-  { value: 'Protocol', label: 'Protocol' },
-  { value: 'Sanctuary', label: 'Sanctuary' },
-  { value: 'Children', label: 'Children' },
-  { value: 'Youth', label: 'Youth' },
-  { value: 'General', label: 'General' },
+const ROLE_OPTIONS = [
+  { value: '', label: 'Select role' },
+  { value: '1-Pastor', label: '1-Pastor' },
+  { value: '2-Worker', label: '2-Worker' },
+  { value: '2b-Visiting Worker', label: '2b-Visiting Worker' },
+  { value: '3-Members', label: '3-Members' },
+  { value: '4-Attendee', label: '4-Attendee' },
+  { value: '5-Firstimer', label: '5-Firstimer' },
+  { value: '6-Visitors', label: '6-Visitors' },
+  { value: '7-Archived', label: '7-Archived' },
+  { value: '8-AnotherBranch', label: '8-AnotherBranch' },
+  { value: '9-NoContact', label: '9-NoContact' },
+  { value: '10- Invalid Contact', label: '10-Invalid Contact' },
+  { value: '11-Volunteer', label: '11-Volunteer' },
+  { value: '12-Non-Reachable', label: '12-Non-Reachable' },
+  { value: '13-Student', label: '13-Student' },
 ]
 
 export function MemberForm({ defaultValues, onSubmit, submitLabel = 'Save Member' }: MemberFormProps) {
@@ -57,6 +62,7 @@ export function MemberForm({ defaultValues, onSubmit, submitLabel = 'Save Member
       surname: defaultValues?.surname ?? '',
       phone: defaultValues?.phone ?? '',
       email: defaultValues?.email ?? '',
+      address: defaultValues?.address ?? '',
       location: defaultValues?.location ?? '',
       unit: defaultValues?.unit ?? '',
       sex: defaultValues?.sex ?? 'Male',
@@ -105,17 +111,22 @@ export function MemberForm({ defaultValues, onSubmit, submitLabel = 'Save Member
           {...register('email')}
         />
         <Input
+          label="Address"
+          placeholder="Street address"
+          error={errors.address?.message}
+          {...register('address')}
+        />
+        <Input
           label="Location"
           placeholder="City, State"
           error={errors.location?.message}
-          required
           {...register('location')}
         />
-        <Select
+        {/* Unit: open text field, not required */}
+        <Input
           label="Unit"
-          options={UNIT_OPTIONS}
+          placeholder="e.g. Choir, Ushers, Media…"
           error={errors.unit?.message}
-          required
           {...register('unit')}
         />
         <Select
@@ -125,9 +136,10 @@ export function MemberForm({ defaultValues, onSubmit, submitLabel = 'Save Member
           required
           {...register('sex')}
         />
-        <Input
-          label="Role / Position"
-          placeholder="Member, Leader, etc."
+        {/* Role: dropdown with values from sheet */}
+        <Select
+          label="Role"
+          options={ROLE_OPTIONS}
           error={errors.role?.message}
           required
           {...register('role')}
@@ -136,7 +148,6 @@ export function MemberForm({ defaultValues, onSubmit, submitLabel = 'Save Member
           label="Date Joined"
           type="date"
           error={errors.date?.message}
-          required
           {...register('date')}
         />
       </div>
