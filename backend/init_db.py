@@ -32,7 +32,7 @@ def create_default_admin():
         
         print("✓ Default admin user created successfully!")
         print("  Email: admin@church.com")
-        print("  Password: admin123")
+        print("  Password: adminokay123")
         print("  ⚠️  WARNING: Change this password immediately in the admin panel!")
         
     except Exception as e:

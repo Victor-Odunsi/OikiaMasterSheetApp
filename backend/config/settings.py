@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
     
     # Application
-    APP_NAME: str = "Church Usher System"
+    APP_NAME: str = "OikiaCC Yaba Members Management System"
     DEBUG: bool = False
     
     # Security
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     FROM_NAME: str = "Church Usher System"
     
     # Frontend URL (for reset links)
-    FRONTEND_URL: str = "http://localhost:3000"  # Update for production
+    FRONTEND_URL: str = "http://localhost:3000"
     
     # CORS
     CORS_ORIGINS: list[str] = [

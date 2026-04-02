@@ -160,7 +160,7 @@ class EmailService:
                     </div>
                     <p>If you didn't request a password reset, please ignore this email. Your password will remain unchanged.</p>
                     <p>Best regards,<br>
-                    {settings.APP_NAME} Team</p>
+                    Admin</p>
                 </div>
                 <div class="footer">
                     <p>This is an automated email. Please do not reply.</p>
@@ -186,7 +186,7 @@ class EmailService:
         If you didn't request a password reset, please ignore this email.
         
         Best regards,
-        {settings.APP_NAME} Team
+        Admin
         """
         
         return self.send_email(
@@ -254,7 +254,7 @@ class EmailService:
                     <p>This is to confirm that your password for {settings.APP_NAME} has been successfully changed.</p>
                     <p>If you did not make this change, please contact your administrator immediately.</p>
                     <p>Best regards,<br>
-                    {settings.APP_NAME} Team</p>
+                    Admin</p>
                 </div>
             </div>
         </body>
@@ -271,7 +271,7 @@ class EmailService:
         If you did not make this change, please contact your administrator immediately.
         
         Best regards,
-        {settings.APP_NAME} Team
+        Admin
         """
         
         return self.send_email(
