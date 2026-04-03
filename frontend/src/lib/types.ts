@@ -21,6 +21,7 @@ export interface Member {
   first_name: string
   phone: string
   email?: string
+  address?: string
   location: string
   unit: string
   sex: 'Male' | 'Female'
@@ -60,6 +61,7 @@ export interface MemberFormData {
   first_name: string
   phone: string
   email?: string
+  address?: string
   location: string
   unit: string
   sex: 'Male' | 'Female'
