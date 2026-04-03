@@ -43,7 +43,6 @@ app_venv/
 # Google credentials
 oikiayaba-database-7861060b10ec.json
 credentials.json
-*.json
 
 # IDE
 .vscode/
@@ -66,3 +65,4 @@ htmlcov/
 
 # Deployment
 *.pid
+package-lock.json
