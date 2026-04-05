@@ -4,6 +4,7 @@ Handles environment variables and app settings
 """
 from pydantic_settings import BaseSettings
 from typing import Optional
+import os
 
 
 class Settings(BaseSettings):
@@ -41,13 +42,13 @@ class Settings(BaseSettings):
     FROM_NAME: str = "Church Usher System"
     
     # Frontend URL (for reset links)
-    FRONTEND_URL: str = "http://localhost:3000"
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
     
     # CORS
     CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://localhost:8000",
-        "https://your-frontend-domain.vercel.app"
+        "https://oikiacc-yaba-mastersheet.vercel.app"
     ]
     
     class Config:
