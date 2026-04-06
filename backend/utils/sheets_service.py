@@ -10,6 +10,33 @@ from typing import List, Optional
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
+import base64
+import json
+import tempfile
+import os
+from config.settings import settings
+
+def get_credentials_file() -> str:
+    """
+    Returns path to credentials file.
+    In production, decodes from base64 env var.
+    In development, uses local file.
+    """
+    # If base64 credentials are set (production)
+    if settings.GOOGLE_CREDENTIALS_BASE64:
+        creds_data = base64.b64decode(settings.GOOGLE_CREDENTIALS_BASE64).decode('utf-8')
+        tmp = tempfile.NamedTemporaryFile(
+            mode='w',
+            suffix='.json',
+            delete=False
+        )
+        tmp.write(creds_data)
+        tmp.close()
+        return tmp.name
+    
+    # Fall back to local file (development)
+    return settings.GOOGLE_CREDENTIALS_FILE
+
 
 class GoogleSheetsService:
     """Service for interacting with Google Sheets API"""
@@ -23,7 +50,7 @@ class GoogleSheetsService:
     def _initialize_service(self):
         try:
             creds = service_account.Credentials.from_service_account_file(
-                settings.GOOGLE_CREDENTIALS_FILE,
+                get_credentials_file(),
                 scopes=SCOPES
             )
             self.service = build("sheets", "v4", credentials=creds)

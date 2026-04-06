@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     GOOGLE_SHEETS_ID: str = ""  # Set via environment variable
     GOOGLE_CREDENTIALS_FILE: str = "credentials.json"
     SHEET_NAME: str = "Sheet1"
+    GOOGLE_CREDENTIALS_BASE64: str = ""
     
     # Cache settings
     CACHE_TTL_MINUTES: int = 5
@@ -44,7 +45,7 @@ class Settings(BaseSettings):
     # Frontend URL (for reset links)
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
     
-    # CORS
+    # CORScd backend
     CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://localhost:8000",
