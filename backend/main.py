@@ -11,6 +11,7 @@ from config import settings
 from models import init_db, engine, User
 from routes import auth_router, users_router, members_router, attendance_router, password_reset_router, dashboard_router
 from admin_panel import UserAdmin
+from init_db import create_default_admin
 
 
 @asynccontextmanager
@@ -22,6 +23,8 @@ async def lifespan(app: FastAPI):
     print("[Startup] Initializing database...")
     init_db()
     print("[Startup] Database initialized")
+
+    create_default_admin() 
     
     yield
     
